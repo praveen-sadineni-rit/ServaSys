@@ -1,9 +1,10 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isDemoMode } from "./app/Timesheet/_lib/authMode";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./lib/supabase/config";
 
-// Scoped to /Timesheet only via matcher below — the rest of servasys.com
-// never runs this middleware.
+// Scoped to /Timesheet (and the lowercase alias) via matcher below — the rest
+// of servasys.com never runs this middleware.
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: { headers: request.headers },
@@ -16,8 +17,8 @@ export async function middleware(request: NextRequest) {
   }
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
     {
       cookies: {
         get(name: string) {
@@ -45,5 +46,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/Timesheet/:path*"],
+  matcher: ["/Timesheet/:path*", "/timesheet/:path*"],
 };
