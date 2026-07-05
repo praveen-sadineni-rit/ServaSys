@@ -95,3 +95,12 @@ body {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.6);
 }
+
+/* ── Marquee ── */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-slow  { animation: marquee-left 70s linear infinite; }
+.marquee-track { display: flex; width: max-content; }
+.marquee-track:hover { animation-play-state: paused; }

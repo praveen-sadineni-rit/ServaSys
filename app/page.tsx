@@ -4,6 +4,133 @@ import { useState, useEffect, useRef } from "react";
 import Navbar, { Logo } from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+/* ── Hero announcement banner ──
+   Auto-detects US federal holidays by date (see FEDERAL_HOLIDAYS below) and shows
+   the matching message on the day itself, hiding automatically the next day.
+   To run a manual/custom promo instead (overrides the holiday check), set
+   MANUAL_ANNOUNCEMENT.active to true and fill in the fields. */
+const MANUAL_ANNOUNCEMENT: { active: boolean; message: string; subMessage: string; background: string } = {
+  active: false,
+  message: "",
+  subMessage: "",
+  background: "linear-gradient(90deg, #B22234, #2D2A6E)",
+};
+
+/* Nth weekday of a month, e.g. 3rd Monday of January. weekday: 0=Sun..6=Sat, n: 1-based */
+function nthWeekdayOfMonth(year: number, month: number, weekday: number, n: number): Date {
+  const first = new Date(year, month, 1);
+  const offset = (weekday - first.getDay() + 7) % 7;
+  return new Date(year, month, 1 + offset + (n - 1) * 7);
+}
+
+/* Last weekday of a month, e.g. last Monday of May */
+function lastWeekdayOfMonth(year: number, month: number, weekday: number): Date {
+  const lastDay = new Date(year, month + 1, 0);
+  const offset = (lastDay.getDay() - weekday + 7) % 7;
+  return new Date(year, month, lastDay.getDate() - offset);
+}
+
+type Holiday = {
+  name: string;
+  message: string;
+  subMessage: string;
+  background: string;
+  getDate: (year: number) => Date;
+};
+
+/* All 11 US federal holidays, with accurate floating-date rules baked in */
+const FEDERAL_HOLIDAYS: Holiday[] = [
+  {
+    name: "New Year's Day",
+    message: "🎉 Happy New Year from Serva Systems LLC",
+    subMessage: "wishing you a year of growth, innovation, and success 🎊",
+    background: "linear-gradient(90deg, #6d28d9, #2D2A6E)",
+    getDate: (y) => new Date(y, 0, 1),
+  },
+  {
+    name: "Martin Luther King Jr. Day",
+    message: "✊🏾 Honoring Martin Luther King Jr. Day",
+    subMessage: "celebrating his legacy of equality, justice, and service",
+    background: "linear-gradient(90deg, #2D2A6E, #F5A623)",
+    getDate: (y) => nthWeekdayOfMonth(y, 0, 1, 3),
+  },
+  {
+    name: "Presidents Day",
+    message: "🇺🇸 Happy Presidents Day from Serva Systems LLC",
+    subMessage: "honoring the leadership and legacy of our nation's presidents",
+    background: "linear-gradient(90deg, #B22234, #2D2A6E)",
+    getDate: (y) => nthWeekdayOfMonth(y, 1, 1, 3),
+  },
+  {
+    name: "Memorial Day",
+    message: "🎖️ Honoring Memorial Day",
+    subMessage: "remembering and honoring those who made the ultimate sacrifice",
+    background: "linear-gradient(90deg, #171340, #B22234)",
+    getDate: (y) => lastWeekdayOfMonth(y, 4, 1),
+  },
+  {
+    name: "Juneteenth",
+    message: "✊🏿 Happy Juneteenth",
+    subMessage: "celebrating freedom, resilience, and progress",
+    background: "linear-gradient(90deg, #b45309, #2D2A6E)",
+    getDate: (y) => new Date(y, 5, 19),
+  },
+  {
+    name: "Independence Day",
+    message: "🎆 Happy Independence Day from Serva Systems LLC",
+    subMessage: "celebrating freedom, innovation, and the people who build the future 🇺🇸",
+    background: "linear-gradient(90deg, #B22234, #2D2A6E)",
+    getDate: (y) => new Date(y, 6, 4),
+  },
+  {
+    name: "Labor Day",
+    message: "🛠️ Happy Labor Day from Serva Systems LLC",
+    subMessage: "celebrating the hard work and dedication of teams everywhere",
+    background: "linear-gradient(90deg, #F5A623, #2D2A6E)",
+    getDate: (y) => nthWeekdayOfMonth(y, 8, 1, 1),
+  },
+  {
+    name: "Columbus Day",
+    message: "🧭 Happy Columbus Day",
+    subMessage: "marking a moment in the history of exploration",
+    background: "linear-gradient(90deg, #7c3aed, #2D2A6E)",
+    getDate: (y) => nthWeekdayOfMonth(y, 9, 1, 2),
+  },
+  {
+    name: "Veterans Day",
+    message: "🎖️ Honoring Veterans Day",
+    subMessage: "thank you to all who served",
+    background: "linear-gradient(90deg, #171340, #B22234)",
+    getDate: (y) => new Date(y, 10, 11),
+  },
+  {
+    name: "Thanksgiving Day",
+    message: "🦃 Happy Thanksgiving from Serva Systems LLC",
+    subMessage: "grateful for our clients, partners, and team",
+    background: "linear-gradient(90deg, #b45309, #F5A623)",
+    getDate: (y) => nthWeekdayOfMonth(y, 10, 4, 4),
+  },
+  {
+    name: "Christmas Day",
+    message: "🎄 Merry Christmas from Serva Systems LLC",
+    subMessage: "wishing you joy, peace, and prosperity this holiday season",
+    background: "linear-gradient(90deg, #b91c1c, #F5A623)",
+    getDate: (y) => new Date(y, 11, 25),
+  },
+];
+
+function isSameCalendarDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function getTodaysHolidayAnnouncement(): { active: boolean; message: string; subMessage: string; background: string } {
+  if (MANUAL_ANNOUNCEMENT.active) return MANUAL_ANNOUNCEMENT;
+  const today = new Date();
+  const holiday = FEDERAL_HOLIDAYS.find((h) => isSameCalendarDay(h.getDate(today.getFullYear()), today));
+  if (!holiday) return { active: false, message: "", subMessage: "", background: "" };
+  return { active: true, message: holiday.message, subMessage: holiday.subMessage, background: holiday.background };
+}
+
 /* ── Scroll reveal ── */
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -110,6 +237,15 @@ export default function Home() {
     setFormStatus("sent");
   };
 
+  // Computed client-side (not at build time) so the banner reflects the visitor's actual date,
+  // since this page is statically generated and wouldn't otherwise re-check the date per visit.
+  const [announcement, setAnnouncement] = useState<{ active: boolean; message: string; subMessage: string; background: string }>({
+    active: false, message: "", subMessage: "", background: "",
+  });
+  useEffect(() => {
+    setAnnouncement(getTodaysHolidayAnnouncement());
+  }, []);
+
   return (
     <div id="top">
       <Navbar />
@@ -120,6 +256,25 @@ export default function Home() {
           <div className="absolute w-96 h-96 rounded-full bg-[#F5A623]/10 blur-3xl -top-20 -right-20 animate-float-slow" />
           <div className="absolute w-72 h-72 rounded-full bg-[#4338CA]/30 blur-3xl bottom-0 left-0 animate-float" />
         </div>
+
+        {/* Holiday announcement banner — auto-detected client-side, see getTodaysHolidayAnnouncement() above */}
+        {announcement.active && (
+          <div className="relative overflow-hidden border-b border-white/10" style={{ background: announcement.background }}>
+            <div className="marquee-track marquee-slow py-2">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="flex items-center flex-shrink-0">
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <span key={j} className="flex items-center gap-2 px-8 text-white text-xs font-semibold tracking-wide whitespace-nowrap">
+                      {announcement.message}
+                      <span className="text-white/50">&middot;</span>
+                      {announcement.subMessage}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="relative max-w-5xl mx-auto px-6 lg:px-10 pt-20 pb-24 text-center">
           <Reveal>
