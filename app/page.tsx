@@ -251,7 +251,7 @@ export default function Home() {
               </div>
               <div style={{ background: "#ffffff", borderRadius: 12, padding: "24px 28px", boxShadow: "0 2px 12px rgba(23,19,64,0.06)", borderLeft: "4px solid #F5A623" }}>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#F5A623", marginBottom: 8 }}>Web</p>
-                <a href="https://servasys.com" style={{ fontSize: 15, fontWeight: 600, color: "#171340" }}>servasys.com</a>
+                <a href="https://www.servasys.com" style={{ fontSize: 15, fontWeight: 600, color: "#171340" }}>www.servasys.com</a>
               </div>
             </Reveal>
 
