@@ -19,6 +19,11 @@ const config: Config = {
           amber: "#F5A623",
           coral: "#FF6B57",
         },
+        // Timesheet Splitter tool (/Timesheet) — cream/rust palette, isolated
+        // from the marketing site's ink/signal tokens above.
+        timesheetCream: "#F5F1E8",
+        timesheetRust: "#B5451B",
+        timesheetRustDark: "#8F3714",
       },
       fontFamily: {
         inter: ["Inter", "sans-serif"],
