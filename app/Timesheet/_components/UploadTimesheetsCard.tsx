@@ -65,6 +65,10 @@ export default function UploadTimesheetsCard({ files, onFilesAdd, onFileRemove, 
         <FileText className="text-gray-400" size={28} />
         <p className="mt-3 text-sm font-semibold text-[#1a1a1a]">Click to choose file(s) — or drag them here</p>
         <p className="mt-1 text-xs text-gray-500">image · pdf · xlsx · xls · csv</p>
+        <p className="mt-2 max-w-md text-[11px] leading-snug text-gray-400">
+          Photos &amp; screenshots are auto-enhanced (sharpened &amp; contrast-boosted) before reading. Clean CSV/XLSX/PDF
+          files read most accurately; always double-check Step 3.
+        </p>
         <input
           ref={inputRef}
           type="file"

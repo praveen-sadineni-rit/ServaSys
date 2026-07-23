@@ -1,4 +1,5 @@
-import { createWorker } from "tesseract.js";
+import { createWorker, PSM } from "tesseract.js";
+import { preprocessForOcr } from "./preprocessImage";
 
 /** A recognised word with its pixel bounding box — used to reconstruct 2D
  * layouts (e.g. calendar grids) that flat OCR text would scramble. */
@@ -54,10 +55,17 @@ function collectWords(data: any): OcrWord[] {
  * Step 3 lets the user fix any misread rows by hand. Returns both the flat text
  * and positioned words so callers can reconstruct tables/grids. */
 export async function recognizeImage(file: File): Promise<OcrResult> {
+  // Clean up the image first (upscale/grayscale/contrast) — the single biggest
+  // free accuracy win for traditional OCR.
+  const prepared = await preprocessForOcr(file);
+
   const worker = await createWorker("eng");
   try {
+    // "Assume a uniform block of text", which suits the row/grid layout of most
+    // timesheets better than the default fully-automatic segmentation.
+    await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
     // Request block/word geometry (off by default in v5) so we get bounding boxes.
-    const { data } = await worker.recognize(file, {}, { text: true, blocks: true });
+    const { data } = await worker.recognize(prepared, {}, { text: true, blocks: true });
     return { text: data.text ?? "", words: collectWords(data) };
   } finally {
     await worker.terminate();
